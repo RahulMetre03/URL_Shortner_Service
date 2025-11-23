@@ -1,4 +1,4 @@
-# LinkSHort - URL Shortener
+# LinkShort - URL Shortener
 
 TinyLink is a simple web application to shorten URLs, track clicks, and view link statistics. Think of it as a mini version of Bit.ly.  
 
