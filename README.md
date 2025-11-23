@@ -135,8 +135,6 @@ Feel free to fork, modify, or suggest improvements. Ensure endpoints and URL con
 
 ---
 
-## License
 
-MIT License
 
 
