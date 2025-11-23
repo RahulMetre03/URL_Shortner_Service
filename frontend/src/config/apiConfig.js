@@ -1,5 +1,5 @@
 
-export const BASE_URL = "https://url-shortner-service-4ltm.onrender.com";
+export const BASE_URL = "https://url-shortner-service-4ltm.onrender.com/api";
 
 export const API = {
   AUTH: {
