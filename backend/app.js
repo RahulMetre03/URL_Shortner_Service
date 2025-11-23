@@ -16,7 +16,7 @@ app.get("/:code", getAndRedirect);
 
 // Health check endpoint
 app.get("/healthz", (req, res) => {
-  res.sendStatus(200); // returns 200 OK
+  res.status(200).json({ ok: true, version: "1.0" }); // returns 200 OK
 });
 
 app.listen(process.env.PORT, () => {
