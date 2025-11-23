@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
-import { jwtDecode } from "jwt-decode";
 import "react-toastify/dist/ReactToastify.css";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import Navbar from "../components/Navbar";
-import { API } from "../config/apiConfig";
+import { useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar';
+import { API, BASE_URL } from "../config/apiConfig.js";
 
-const LinkStatsPage = () => {
-  const { code } = useParams(); // grab the link code from URL
-  const [link, setLink] = useState(null);
-  const navigate = useNavigate();
+const StatsPage = () => {
+  const [links, setLinks] = useState([]);
   const [currentPage, setCurrentPage] = useState('stats');
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -19,6 +17,7 @@ const LinkStatsPage = () => {
     navigate('/');
   };
 
+  // Handle navigation when currentPage changes
   useEffect(() => {
     if (currentPage === 'dashboard') {
       navigate('/dashboard');
@@ -26,22 +25,30 @@ const LinkStatsPage = () => {
   }, [currentPage, navigate]);
 
   useEffect(() => {
-    const fetchLink = async () => {
+    const fetchLinks = async () => {
       const token = localStorage.getItem("token");
       if (!token) return;
-      const userId = token ? jwtDecode(token).id : null;
+
+      let userId;
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        userId = payload.id;
+      } catch (err) {
+        console.error("Invalid token");
+        return;
+      }
 
       try {
-        const res = await fetch(API.LINKS.GET(code,userId), {
+        const res = await fetch(API.LINKS.GET_ALL(userId), {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
-        const data = await res.json();
 
+        const data = await res.json();
         if (!res.ok) {
-          toast.error(data.message || "Failed to fetch link stats");
+          toast.error(data.message || "Failed to fetch links");
         } else {
-          setLink(data);
+          setLinks(data);
         }
       } catch (err) {
         console.error(err);
@@ -49,28 +56,21 @@ const LinkStatsPage = () => {
       }
     };
 
-    fetchLink();
-  }, [code]);
+    fetchLinks();
+  }, []);
 
-  if (!link) return <p>Loading...</p>;
-// --- Derived data for charts ---
-  const createdDate = new Date(link.created_at);
-  const updatedDate = new Date(link.updated_at);
-  const totalDays = Math.max(1, Math.ceil((updatedDate - createdDate) / (1000 * 60 * 60 * 24)));
-
-  // Clicks over lifetime (uniform distribution)
-  const clicksOverTime = Array.from({ length: totalDays }, (_, i) => ({
-    date: new Date(createdDate.getTime() + i * 24 * 60 * 60 * 1000).toLocaleDateString(),
-    clicks: Math.floor(link.clicks / totalDays),
+  // Prepare chart data
+  const statsData = links.map(link => ({
+    name: link.code,
+    clicks: link.clicks
   }));
 
-  // Click progress toward goal (e.g., goal = 10 clicks)
-  const clickGoal = 10;
-  const clickProgressPercent = Math.min(100, Math.round((link.clicks / clickGoal) * 100));
+  const totalClicks = links.reduce((sum, link) => sum + link.clicks, 0);
+  const avgClicks = links.length > 0 ? Math.round(totalClicks / links.length) : 0;
 
   return (
     <div>
-      <Navbar 
+      <Navbar
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         onLogout={handleLogout}
@@ -78,17 +78,16 @@ const LinkStatsPage = () => {
 
       <ToastContainer position="top-right" autoClose={3000} />
 
-      <h2 className="page-title">Stats for {link.code}</h2>
+      <h2 className="page-title">Click Statistics</h2>
 
-      {/* Clicks over lifetime */}
       <div className="chart-container" style={{ marginTop: '1.5rem' }}>
-        <h3 className="chart-title">Clicks Over Lifetime</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={clicksOverTime}>
+        <h3 className="chart-title">Clicks per Link</h3>
+        <ResponsiveContainer width="100%" height={400}>
+          <BarChart data={statsData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-            <XAxis dataKey="date" stroke="#9CA3AF" />
+            <XAxis dataKey="name" stroke="#9CA3AF" />
             <YAxis stroke="#9CA3AF" />
-            <Tooltip 
+            <Tooltip
               contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px' }}
               labelStyle={{ color: '#D1D5DB' }}
             />
@@ -97,41 +96,22 @@ const LinkStatsPage = () => {
         </ResponsiveContainer>
       </div>
 
-      {/* Stats cards */}
       <div className="stats-grid">
         <div className="stat-card">
-          <p className="stat-label">Short URL</p>
-          <p className="stat-value">{link.code}</p>
-        </div>
-        <div className="stat-card">
-          <p className="stat-label">Target URL</p>
-         <p className="stat-value">
-  {link.target_url.length > 7
-    ? `${link.target_url.slice(8, 15)}...`
-    : link.target_url}
-</p>
-
+          <p className="stat-label">Total Links</p>
+          <p className="stat-value">{links.length}</p>
         </div>
         <div className="stat-card">
           <p className="stat-label">Total Clicks</p>
-          <p className="stat-value stat-value-blue">{link.clicks}</p>
+          <p className="stat-value stat-value-blue">{totalClicks}</p>
         </div>
         <div className="stat-card">
-          <p className="stat-label">Created At</p>
-          <p className="stat-value">{createdDate.toLocaleDateString()}</p>
-        </div>
-        <div className="stat-card">
-          <p className="stat-label">Days Active</p>
-          <p className="stat-value">{totalDays}</p>
-        </div>
-        <div className="stat-card">
-          <p className="stat-label">Click Goal Progress</p>
-          <p className="stat-value stat-value-cyan">{clickProgressPercent}%</p>
+          <p className="stat-label">Avg Clicks per Link</p>
+          <p className="stat-value stat-value-cyan">{avgClicks}</p>
         </div>
       </div>
     </div>
   );
 };
 
-
-export default LinkStatsPage;
+export default StatsPage;
