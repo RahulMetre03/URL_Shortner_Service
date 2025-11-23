@@ -10,7 +10,7 @@ const StatsPage = () => {
   const [links, setLinks] = useState([]);
   const [currentPage, setCurrentPage] = useState('stats');
   const navigate = useNavigate();
-  
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     toast.success("Logged out successfully!");
@@ -70,7 +70,7 @@ const StatsPage = () => {
 
   return (
     <div>
-      <Navbar 
+      <Navbar
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         onLogout={handleLogout}
@@ -79,7 +79,7 @@ const StatsPage = () => {
       <ToastContainer position="top-right" autoClose={3000} />
 
       <h2 className="page-title">Click Statistics</h2>
-      
+
       <div className="chart-container" style={{ marginTop: '1.5rem' }}>
         <h3 className="chart-title">Clicks per Link</h3>
         <ResponsiveContainer width="100%" height={400}>
@@ -87,7 +87,7 @@ const StatsPage = () => {
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
             <XAxis dataKey="name" stroke="#9CA3AF" />
             <YAxis stroke="#9CA3AF" />
-            <Tooltip 
+            <Tooltip
               contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px' }}
               labelStyle={{ color: '#D1D5DB' }}
             />
