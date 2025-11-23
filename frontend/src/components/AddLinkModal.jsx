@@ -1,0 +1,91 @@
+import React, { useState } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+const AddLinkModal = ({ onClose, onSubmit }) => {
+  const [newLink, setNewLink] = useState({ url: '', customCode: '' });
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!newLink.url) {
+      toast.error("Please enter a URL");
+      return;
+    }
+    let formattedUrl = newLink.url;
+      try {
+        // Ensure URL has proper protocol
+        if (!/^https?:\/\//i.test(formattedUrl)) {
+          formattedUrl = "https://" + formattedUrl;
+        }
+        new URL(formattedUrl); // throws if invalid
+      } catch (err) {
+        toast.error("Please enter a valid URL");
+        return;
+      }
+
+    setLoading(true);
+
+    try {
+      
+      // Assuming userId is stored in localStorage (from login)
+      const token = localStorage.getItem("token"); // optional if no auth
+      const userId = JSON.parse(atob(token.split('.')[1])).id; // decode JWT
+
+      const res = await fetch("http://localhost:5000/api/links/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // "Authorization": `Bearer ${token}` // if using auth
+        },
+        body: JSON.stringify({ url: newLink.url, userId })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.message || "Failed to create link");
+      } else {
+        toast.success("Link created successfully!");
+        onSubmit(data.link); // pass the new link back to dashboard
+        setNewLink({ url: '', customCode: '' });
+        onClose();
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Server error. Try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay">
+      <ToastContainer position="top-right" autoClose={3000} />
+      <div className="modal-content">
+        <h3 className="modal-title">Add New Link</h3>
+        
+        <div className="form-group">
+          <label className="form-label">Target URL *</label>
+          <input 
+            type="url"
+            value={newLink.url}
+            onChange={(e) => setNewLink({...newLink, url: e.target.value})}
+            className="form-input"
+            placeholder="https://example.com"
+          />
+        </div>
+        
+        <div className="modal-actions">
+          <button onClick={onClose} className="btn-cancel" disabled={loading}>
+            Cancel
+          </button>
+          <button onClick={handleSubmit} className="btn-submit" disabled={loading}>
+            {loading ? "Adding..." : "Add Link"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AddLinkModal;
