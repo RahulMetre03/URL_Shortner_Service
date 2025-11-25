@@ -189,16 +189,17 @@ const Dashboard = () => {
               <tbody className="table-body">
                 {filteredLinks.map(link => (
                   <tr key={link.id}>
-                    <td>
-                      <a
-                        href={`${BASE_URL.replace("/api", "")}/${link.code}`} 
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="link-code"
-                        style={{ textDecoration: 'none', cursor: 'pointer' }}
-                      >
-                        {link.code}
-                      </a>
+                      <td>
+                        <span
+                          onClick={() => {
+                            navigator.clipboard.writeText(`${BASE_URL.replace("/api", "")}/${link.code}`);
+                            toast.success("Link Copied!"); // optional toast or notification
+                          }}
+                          style={{ cursor: "pointer", textDecoration: "underline", color: "#3B82F6" }}
+                          title="Click to copy"
+                        >
+                          {link.code}
+                        </span>
                     </td>
                     <td className="link-url">
   {link.target_url.length > 7
