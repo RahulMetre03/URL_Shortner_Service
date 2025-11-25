@@ -10,6 +10,6 @@ export const API = {
     GET_ALL: (userId) => `${BASE_URL}/links?userId=${userId}`,
     GET: (code,userId) => `${BASE_URL}/links/${code}?userId=${userId}`,
     DELETE: (id, userId) => `${BASE_URL}/links/${id}?userId=${userId}`,
-    ADD: (userId) => `${BASE_URL}/links?userId=${userId}`,
+    ADD: `${BASE_URL}/links`
   }
 };
