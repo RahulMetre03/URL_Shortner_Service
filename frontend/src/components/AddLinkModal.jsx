@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { API } from '../config/apiConfig';
 
 const AddLinkModal = ({ onClose, onSubmit }) => {
   const [newLink, setNewLink] = useState({ url: '', customCode: '' });
   const [loading, setLoading] = useState(false);
+
+  const token = localStorage.getItem("token");
+  const userId = token ? jwtDecode(token).id : null;
 
   const handleSubmit = async () => {
     if (!newLink.url) {
@@ -25,20 +29,14 @@ const AddLinkModal = ({ onClose, onSubmit }) => {
 
     setLoading(true);
 
-    try {
-      
-      // Assuming userId is stored in localStorage (from login)
-      const token = localStorage.getItem("token"); // optional if no auth
-      const userId = JSON.parse(atob(token.split('.')[1])).id; // decode JWT
-
-      const res = await fetch("http://localhost:5000/api/links/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // "Authorization": `Bearer ${token}` // if using auth
-        },
-        body: JSON.stringify({ url: newLink.url, userId })
-      });
+   try {
+    const res = await fetch(API.LINKS.ADD, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ url: newLink.url, userId })
+    });
 
       const data = await res.json();
 

@@ -139,9 +139,9 @@ const Dashboard = () => {
     navigate('/');
   };
 
- const viewStats = (code) => {
-  navigate(`/code/${code}`);
-}
+  const viewStats = (code) => {
+    navigate(`/code/${code}`);
+  }
 
 
   return (
@@ -173,6 +173,7 @@ const Dashboard = () => {
       {loading ? (
         <p style={{ color: 'white' }}>Loading...</p>
       ) : (
+        <div className='table-outer'>
         <div className="table-container">
           <div className="table-wrapper">
             <table className="data-table">
@@ -189,23 +190,23 @@ const Dashboard = () => {
               <tbody className="table-body">
                 {filteredLinks.map(link => (
                   <tr key={link.id}>
-                      <td>
-                        <span
-                          onClick={() => {
-                            navigator.clipboard.writeText(`${BASE_URL.replace("/api", "")}/${link.code}`);
-                            toast.success("Link Copied!"); // optional toast or notification
-                          }}
-                          style={{ cursor: "pointer", textDecoration: "underline", color: "#3B82F6" }}
-                          title="Click to copy"
-                        >
-                          {link.code}
-                        </span>
+                    <td>
+                      <span
+                        onClick={() => {
+                          navigator.clipboard.writeText(`${BASE_URL.replace("/api", "")}/${link.code}`);
+                          toast.success("Link Copied!"); // optional toast or notification
+                        }}
+                        style={{ cursor: "pointer", textDecoration: "underline", color: "#3B82F6" }}
+                        title="Click to copy"
+                      >
+                        {link.code}
+                      </span>
                     </td>
                     <td className="link-url">
-  {link.target_url.length > 7
-    ? `${link.target_url.slice(8, 15)}...`
-    : link.target_url}
-</td>
+                      {link.target_url.length > 7
+                        ? `${link.target_url.slice(8, 15)}...`
+                        : link.target_url}
+                    </td>
 
                     <td>
                       <span className="clicks-badge">{link.clicks}</span>
@@ -225,6 +226,7 @@ const Dashboard = () => {
               </tbody>
             </table>
           </div>
+        </div>
         </div>
       )}
 
